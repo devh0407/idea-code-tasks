@@ -1,5 +1,6 @@
 package io.github.devh0407.codetasks.window;
 
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -215,7 +216,7 @@ public final class CodeTasksPanel extends JPanel {
         }
         int modelRow = table.convertRowIndexToModel(selectedViewRow);
         ExternalIssue issue = tableModel.getIssue(modelRow);
-        VirtualFile file = fileResolver.resolve(issue.filePath()).orElse(null);
+        VirtualFile file = ReadAction.compute(() -> fileResolver.resolve(issue.filePath()).orElse(null));
         if (file == null) {
             Messages.showWarningDialog(
                     project,
