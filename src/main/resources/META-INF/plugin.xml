@@ -1,0 +1,19 @@
+<idea-plugin>
+    <id>io.github.devh0407.idea-code-tasks</id>
+    <name>Code Tasks</name>
+    <vendor url="https://github.com/devh0407">devh0407</vendor>
+
+    <description><![CDATA[
+        Import TODO and PROBLEM records from CSV/XLSX, highlight matching source lines,
+        and navigate them from a dedicated Code Tasks tool window.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow
+                id="Code Tasks"
+                anchor="bottom"
+                factoryClass="io.github.devh0407.codetasks.window.CodeTasksToolWindowFactory"/>
+    </extensions>
+</idea-plugin>
