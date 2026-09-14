@@ -16,11 +16,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service(Service.Level.PROJECT)
 public final class ExternalIssueService {
     private final Project project;
     private final List<Runnable> listeners = new CopyOnWriteArrayList<>();
+    private final AtomicLong reloadGeneration = new AtomicLong();
 
     private volatile List<ExternalIssue> issues = List.of();
     private volatile String lastError = "";
@@ -67,9 +69,9 @@ public final class ExternalIssueService {
     }
 
     public void reloadAsync() {
-        if (loading) {
-            return;
-        }
+        long generation = reloadGeneration.incrementAndGet();
+        String configuredPath = CodeTasksSettings.getInstance(project).getSourcePath();
+
         loading = true;
         lastError = "";
         notifyChangedOnEdt();
@@ -78,7 +80,6 @@ public final class ExternalIssueService {
             List<ExternalIssue> loaded = List.of();
             String error = "";
             try {
-                String configuredPath = CodeTasksSettings.getInstance(project).getSourcePath();
                 if (!configuredPath.isBlank()) {
                     Path path = Path.of(configuredPath);
                     if (!Files.isRegularFile(path)) {
@@ -91,11 +92,16 @@ public final class ExternalIssueService {
                 error = ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage();
             }
 
-            issues = List.copyOf(loaded);
-            lastError = error;
-            loading = false;
-
+            List<ExternalIssue> finalLoaded = List.copyOf(loaded);
+            String finalError = error;
             ApplicationManager.getApplication().invokeLater(() -> {
+                if (reloadGeneration.get() != generation) {
+                    return;
+                }
+
+                issues = finalLoaded;
+                lastError = finalError;
+                loading = false;
                 IssueMarkerService.getInstance(project).refreshAllOpenEditors();
                 notifyChanged();
             });
