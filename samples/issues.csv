@@ -1,0 +1,3 @@
+id,file,line,type,message,source
+TASK-001,src/main/java/io/github/devh0407/codetasks/source/CsvIssueSource.java,25,TODO,Review this parser branch,demo
+TASK-002,src/main/java/io/github/devh0407/codetasks/service/FileResolver.java,38,PROBLEM,Review fallback file matching,demo
